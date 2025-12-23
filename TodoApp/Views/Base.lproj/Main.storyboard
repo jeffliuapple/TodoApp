@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="aOs-i6-bRO">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--待辦事項-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="TodoListViewController" customModule="TodoApp" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="XlR-6m-eEb">
+                                <rect key="frame" x="0.0" y="172" width="393" height="612"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="rtc-kr-S0t">
+                                <rect key="frame" x="178" y="459.66666666666669" width="37" height="37"/>
+                            </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Ww-lJ-ci6">
+                                <rect key="frame" x="149" y="459" width="95.333333333333314" height="38.333333333333314"/>
+                                <string key="text">沒有待辦事項
+點擊 + 新增</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="XlR-6m-eEb" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="0Lu-km-x98"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="XlR-6m-eEb" secondAttribute="trailing" id="43x-rQ-3P8"/>
+                            <constraint firstItem="rtc-kr-S0t" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="6lN-VH-Ziy"/>
+                            <constraint firstItem="XlR-6m-eEb" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="KhU-lX-Fun"/>
+                            <constraint firstItem="0Ww-lJ-ci6" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="Ra4-dn-a49"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="XlR-6m-eEb" secondAttribute="bottom" id="Tpe-XB-TOJ"/>
+                            <constraint firstItem="rtc-kr-S0t" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="lYP-9s-rHU"/>
+                            <constraint firstItem="0Ww-lJ-ci6" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="rwl-1H-ZnO"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="待辦事項" id="mUQ-4l-gQw">
+                        <barButtonItem key="leftBarButtonItem" systemItem="refresh" id="JzD-8d-6ls">
+                            <connections>
+                                <action selector="refreshBtnTapped:" destination="BYZ-38-t0r" id="HE8-v0-2dx"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="h17-4M-Y1B">
+                            <connections>
+                                <action selector="addBtnTapped:" destination="BYZ-38-t0r" id="8n2-yP-5Pd"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="emptyStateLabel" destination="0Ww-lJ-ci6" id="F13-fQ-5UW"/>
+                        <outlet property="loadingIndicator" destination="rtc-kr-S0t" id="K14-pa-Qal"/>
+                        <outlet property="tableView" destination="XlR-6m-eEb" id="DjG-1N-0Dm"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="973.28244274809151" y="67.605633802816911"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="rzN-S6-zRx">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="aOs-i6-bRO" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="iEL-8r-u8S">
+                        <rect key="frame" x="0.0" y="118" width="393" height="54"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="05W-lx-7fW"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iz7-dr-ys5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="46.564885496183201" y="67.605633802816911"/>
+        </scene>
+    </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
