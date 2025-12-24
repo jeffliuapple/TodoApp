@@ -10,10 +10,9 @@ import UIKit
 class TodoListViewController: UIViewController {
   
   // MARK: - Properties
-
-  private var todos: [Todo] = []
-  private let todoService = TodoService()
   
+  private let viewModel = TodoListViewModel()
+
   // MARK: - UI Components
 
   @IBOutlet weak var tableView: UITableView!
@@ -26,7 +25,8 @@ class TodoListViewController: UIViewController {
     super.viewDidLoad()
     
     setupUI()
-    loadTodos()
+    setupBindings()
+    viewModel.loadTodos()
   }
   
   // MARK: Private methods
@@ -41,29 +41,36 @@ class TodoListViewController: UIViewController {
                        forCellReuseIdentifier: TodoCell.identifier)
   }
   
-  
-  private func loadTodos() {
-    loadingIndicator.startAnimating()
-
-    todoService.fetchTodos { [weak self] result in
-      guard let self else { return }
-      self.loadingIndicator.stopAnimating()
-
+  private func setupBindings() {
+    
+    viewModel.onLoadingStateChanged = { [weak self] isLoading in
       DispatchQueue.main.async {
-        switch result {
-        case .success(let todos):
-          self.todos = todos
-          self.updateUI()
-        case .failure(let error):
-          self.showError(error.localizedDescription)
+        if isLoading {
+          self?.loadingIndicator.startAnimating()
+        } else {
+          self?.loadingIndicator.stopAnimating()
         }
       }
     }
-  }
-  
-  private func updateUI() {
-    emptyStateLabel.isHidden = !todos.isEmpty
-    tableView.reloadData()
+    
+    viewModel.onTodosUpdated = { [weak self] todos in
+      DispatchQueue.main.async {
+        self?.tableView.reloadData()
+      }
+    }
+    
+    
+    viewModel.onEmptyStateChanged = { [weak self] isEmpty in
+      DispatchQueue.main.async {
+        self?.emptyStateLabel.isHidden = !isEmpty
+      }
+    }
+    
+    viewModel.onError = { [weak self] errorMessage in
+      DispatchQueue.main.async {
+        self?.showError(errorMessage)
+      }
+    }
   }
   
   private func showError(_ message: String) {
@@ -77,7 +84,7 @@ class TodoListViewController: UIViewController {
   }
   
   @IBAction func refreshBtnTapped(_ sender: UIBarButtonItem) {
-    loadTodos()
+    viewModel.loadTodos()
   }
   
   @IBAction func addBtnTapped(_ sender: UIBarButtonItem) {
@@ -98,64 +105,10 @@ class TodoListViewController: UIViewController {
             !title.isEmpty else {
         return
       }
-      self?.createTodo(title: title)
+      self?.viewModel.createTodo(title: title)
     })
     
     present(alert, animated: true)
-  }
-  
-  private func createTodo(title: String) {
-    let newTodo = Todo.create(title: title)
-    
-    todoService.createTodo(newTodo) { [weak self] result in
-      DispatchQueue.main.async {
-        switch result {
-        case .success(let todo):
-          self?.todos.insert(todo, at: 0)
-          self?.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-          self?.updateUI()
-        case .failure(let error):
-          self?.showError(error.localizedDescription)
-        }
-      }
-    }
-  }
-  
-  private func toggleTodo(at indexPath: IndexPath) {
-    guard indexPath.row < todos.count,
-          let id = todos[indexPath.row].id else { return }
-    todoService.toggleTodo(id: id) { [weak self] result in
-      guard let self else { return }
-      
-      DispatchQueue.main.async {
-        switch result {
-        case .success():
-          self.todos[indexPath.row].completed.toggle()
-          guard let cell = self.tableView.cellForRow(at: indexPath) as? TodoCell else { return }
-          cell.configure(with:  self.todos[indexPath.row])
-        case .failure(let error):
-          self.showError(error.localizedDescription)
-        }
-      }
-    }
-  }
-  
-  private func deleteTodo(at indexPath: IndexPath) {
-    guard indexPath.row < todos.count,
-          let id = todos[indexPath.row].id else { return }
-    
-    todoService.deleteTodo(id: id) { result in
-      DispatchQueue.main.async {
-        switch result {
-        case .success():
-          self.todos.remove(at: indexPath.row)
-          self.tableView.deleteRows(at: [indexPath], with: .automatic)
-          self.updateUI()
-        case .failure(let error):
-          self.showError(error.localizedDescription)
-        }
-      }
-    }
   }
 
 }
@@ -164,16 +117,16 @@ class TodoListViewController: UIViewController {
 
 extension TodoListViewController: UITableViewDataSource {
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    todos.count
+    viewModel.todosCount
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     guard let cell = tableView.dequeueReusableCell(
-      withIdentifier: TodoCell.identifier, for: indexPath) as? TodoCell else {
+      withIdentifier: TodoCell.identifier, for: indexPath) as? TodoCell,
+          let todo = viewModel.todo(at: indexPath.row) else {
       return UITableViewCell()
     }
     
-    let todo = todos[indexPath.row]
     cell.configure(with: todo)
     
     return cell
@@ -186,18 +139,18 @@ extension TodoListViewController: UITableViewDataSource {
 extension TodoListViewController: UITableViewDelegate {
   
   func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-    50.0
+    viewModel.heightForRow
   }
   
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     tableView.deselectRow(at: indexPath, animated: true)
     
-    toggleTodo(at: indexPath)
+    viewModel.toggleTodo(at: indexPath)
   }
   
   func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
     if editingStyle == .delete {
-      deleteTodo(at: indexPath)
+      viewModel.deleteTodo(at: indexPath)
     }
   }
   
