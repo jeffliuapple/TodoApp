@@ -13,6 +13,8 @@ class TodoListViewController: UIViewController {
   
   private let viewModel = TodoListViewModel()
 
+  private let refreshControl = UIRefreshControl()
+  
   // MARK: - UI Components
 
   @IBOutlet weak var tableView: UITableView!
@@ -27,6 +29,8 @@ class TodoListViewController: UIViewController {
     setupUI()
     setupBindings()
     viewModel.loadTodos()
+    
+    setupRefreshControl()
   }
   
   // MARK: Private methods
@@ -36,7 +40,6 @@ class TodoListViewController: UIViewController {
     tableView.dataSource = self
     
     tableView.estimatedRowHeight = 50
-    tableView.rowHeight = UITableView.automaticDimension
     tableView.register(UINib(nibName: TodoCell.identifier, bundle: nil),
                        forCellReuseIdentifier: TodoCell.identifier)
   }
@@ -49,6 +52,7 @@ class TodoListViewController: UIViewController {
           self?.loadingIndicator.startAnimating()
         } else {
           self?.loadingIndicator.stopAnimating()
+          self?.refreshControl.endRefreshing()
         }
       }
     }
@@ -56,9 +60,9 @@ class TodoListViewController: UIViewController {
     viewModel.onTodosUpdated = { [weak self] todos in
       DispatchQueue.main.async {
         self?.tableView.reloadData()
+        self?.refreshControl.endRefreshing()
       }
     }
-    
     
     viewModel.onEmptyStateChanged = { [weak self] isEmpty in
       DispatchQueue.main.async {
@@ -69,10 +73,26 @@ class TodoListViewController: UIViewController {
     viewModel.onError = { [weak self] errorMessage in
       DispatchQueue.main.async {
         self?.showError(errorMessage)
+        self?.refreshControl.endRefreshing()
       }
     }
   }
   
+  private func setupRefreshControl() {
+    refreshControl.tintColor = .systemBlue
+    refreshControl.attributedTitle = NSAttributedString(
+      string: "下拉重新整理...",
+      attributes: [.foregroundColor: UIColor.gray]
+    )
+    
+    refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+    tableView.refreshControl = refreshControl
+  }
+  
+  @objc private func handleRefresh() {
+    viewModel.loadTodos()
+  }
+
   private func showError(_ message: String) {
     let alert = UIAlertController(
       title: "錯誤",

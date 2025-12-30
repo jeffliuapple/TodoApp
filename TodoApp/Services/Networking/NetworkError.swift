@@ -16,6 +16,7 @@ enum NetworkError: Error {
   case invalidData
   case permissionDenied
   case networkUnavailable
+  case testCreatFailed
 }
 
 extension NetworkError: LocalizedError {
@@ -37,6 +38,8 @@ extension NetworkError: LocalizedError {
       return "沒有權限"
     case .networkUnavailable:
       return "網路連線失敗"
+    case .testCreatFailed:
+      return "測試創建資料失敗"
     }
   }
 }

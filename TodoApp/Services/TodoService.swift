@@ -62,18 +62,26 @@ class TodoService {
   }
   
   func createTodo(_ todo: Todo, completion: @escaping (Result<Todo, NetworkError>) -> Void) {
-    var newTodo = todo
-    let data = newTodo.toDictionary()
+//    completion(.failure(.testCreatFailed))
+//    return
     
-    let docRef = endpoint.collectionRef.addDocument(data: data) { error in
+    var todoToUpload = todo
+    todoToUpload.id = nil
+    
+    let docRef = endpoint.collectionRef.document(todo.clientId)
+    
+    let data = todoToUpload.toDictionary()
+    
+    docRef.setData(data) { error in
       if let error {
         completion(.failure(.firestoreError(error)))
         return
       }
+      var newTodo = todoToUpload
+      newTodo.id = docRef.documentID
+      
+      completion(.success(newTodo))
     }
-    
-    newTodo.id = docRef.documentID
-    completion(.success(newTodo))
   }
   
   func updateTodo(_ todo: Todo, completion: @escaping (Result<Todo, NetworkError>) -> Void ) {
@@ -101,37 +109,23 @@ class TodoService {
     }
   }
   
-  func toggleTodo(id: String, completion: @escaping (Result<Void, NetworkError>) -> Void) {
+  func setTodoCompleted(id: String,
+                        completed: Bool,
+                        completion: @escaping (Result<Void, NetworkError>) -> Void) {
     guard let docRef = FirebaseEndpoint.todo(id: id).documentRef else {
       completion(.failure(.invalidData))
       return
     }
     
-    docRef.getDocument { snapshot, error in
-      if let error = error {
+    docRef.updateData([
+      "completed": completed,
+      "updatedAt": Timestamp(date: Date())
+    ]) { error in
+      if let error {
         completion(.failure(.firestoreError(error)))
         return
       }
-      
-      guard let snapshot = snapshot,
-            let todo = Todo.fromDocument(snapshot) else {
-        completion(.failure(.documentNotFound))
-        return
-      }
-      
-      let newStatus = !todo.completed
-      
-      docRef.updateData([
-        "completed": newStatus,
-        "updatedAt": Timestamp(date: Date())
-      ]) { error in
-        if let error = error {
-          completion(.failure(.firestoreError(error)))
-          return
-        }
-        
-        completion(.success(()))
-      }
+      completion(.success(()))
     }
   }
 
